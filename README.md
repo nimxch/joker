@@ -1,49 +1,171 @@
-# JokerDB🃏: A Redis Implementaion in Golang
+# JokerDB 🃏
 
-JokerDB🃏 is a Redis clone implemented in Golang. This project aims to provide a simplified version of Redis functionalities using the Go programming language.
+> A Redis-inspired in-memory key-value store implementation in Go
 
-## Features
+JokerDB is a lightweight, Redis-inspired key-value database implemented in Go. It provides a TCP-based server with a simple TLV (Tag-Length-Value) protocol for storing and retrieving data in memory.
 
-- **Key-Value Store:** A basic key-value store inspired by Redis.
-- **In-Memory Database:** Data is stored in-memory for simplicity.
-- **Support for Data Types:** String
-<!-- , List, Set, etc. -->
-- **Command-Line Interface (CLI):** Interact with JokerDB🃏 through a command-line interface.
-<!-- - **Concurrency:** Implement concurrent operations for scalability. -->
+## ✨ Features
 
-## Getting Started
+- **🔑 Key-Value Store**: Simple and efficient in-memory key-value storage
+- **⚡ TCP Server**: Network-accessible server listening on port 9999
+- **📦 TLV Protocol**: Custom Tag-Length-Value protocol for client-server communication
+- **🚀 Lightweight**: Minimal dependencies with pure Go implementation
+- **🔧 Concurrent**: Handle multiple client connections simultaneously
 
-### Prerequisites
+## 📋 Prerequisites
 
-- Go (version 1.20.3)
-<!-- - [Other dependencies, if any] -->
+- Go 1.20 or higher
+- Make (optional, for using Makefile commands)
+
+## 🚀 Getting Started
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository:**
 
-    ```bash
-    git clone https://github.com/0x4E43/jokerdb.git
-    cd jokerdb
-    ```
+   ```bash
+   git clone https://github.com/nimaidev/joker.git
+   cd joker
+   ```
 
-2. Build the project:
+2. **Build the project:**
 
-    ```bash
-    go build
-    ```
+   Using Make:
+   ```bash
+   make build
+   ```
 
-3. Run JokerDB🃏:
+   Or using Go directly:
+   ```bash
+   go build -o .build/joker
+   ```
 
-    ```bash
-    ./jokerdb
-    ```
+3. **Run JokerDB:**
 
-## Usage
+   Using Make:
+   ```bash
+   make run
+   ```
 
-How to use JokerDB🃏. Include examples of commands, interactions, and any important usage details.
+   Or run the binary directly:
+   ```bash
+   ./.build/joker
+   ```
+
+   The server will start and listen on `localhost:9999`.
+
+## 💡 Usage
+
+JokerDB uses a custom TLV (Tag-Length-Value) protocol for communication. The protocol format is:
+
+```
+[Tag: 2 bytes][Length: 2 bytes][Value: N bytes]
+```
+
+### Supported Operations
+
+#### PUT Operation (Tag: 1)
+Store a key-value pair in the database.
+
+**Format:** `key>value`
+
+**Example:**
+```
+Tag: 0x0001 (PUT command)
+Length: length of "mykey>myvalue"
+Value: "mykey>myvalue"
+```
+
+#### GET Operation (Tag: 2)
+Retrieve a value by its key.
+
+**Format:** `key`
+
+**Example:**
+```
+Tag: 0x0002 (GET command)
+Length: length of "mykey"
+Value: "mykey"
+```
+
+### Response Codes
+
+- `0`: Success
+- `101`: Key not found error
+
+### Example Client Connection
+
+You can connect to JokerDB using any TCP client. Here's an example using `nc` (netcat):
 
 ```bash
-# Example commands
-jokerdb SET mykey "Hello"
-jokerdb GET mykey
+# Connect to the server
+nc localhost 9999
+
+# Then send binary data according to the TLV protocol
+```
+
+For a more practical approach, you'll need to implement a client that properly encodes data using the TLV protocol.
+
+## 🏗️ Project Structure
+
+```
+.
+├── main.go           # Main entry point and TCP server
+├── server/           # Server implementation with TLV protocol
+├── parser/           # Command parsing logic
+├── constants/        # Application constants
+├── utils/            # Utility functions
+├── config/           # Configuration files
+├── Makefile          # Build and run commands
+└── README.md         # This file
+```
+
+## 🛠️ Development
+
+### Available Make Commands
+
+```bash
+make build    # Build the project
+make run      # Build and run the project
+make go-run   # Run without building
+make test     # Run tests
+make clean    # Clean build artifacts
+```
+
+### Running Tests
+
+```bash
+make test
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is open source and available under the MIT License.
+
+## 🎯 Roadmap
+
+- [ ] Add support for more Redis-like commands (DEL, EXISTS, etc.)
+- [ ] Implement data persistence
+- [ ] Add support for different data types (Lists, Sets, Hashes)
+- [ ] Implement authentication
+- [ ] Add Redis protocol (RESP) support
+- [ ] Improve error handling and logging
+- [ ] Add comprehensive test coverage
+
+## 👏 Acknowledgments
+
+Inspired by Redis and built as a learning project to explore Go's networking capabilities and concurrent programming patterns.
+
+---
+
+**Note:** This is an educational project and not intended for production use.
