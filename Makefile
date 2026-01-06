@@ -13,6 +13,8 @@ build: $(GO_FILES)
 	@echo "Building $(APP_NAME)..."
 	@mkdir -p $(BUILD_DIR)
 	@go build -o $(BIN_PATH) .
+dev:
+	@go run .
 
 run: build
 	@echo "Running $(APP_NAME)..."
