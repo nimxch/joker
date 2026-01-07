@@ -2,30 +2,31 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
 func main() {
 	fmt.Println("Hello Joker")
-	ch := make(chan int, 1)
+	shutdown := make(chan struct{})
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		time.Sleep(5 * time.Second)
-		ch <- 42
+		<-sigCh
+		close(shutdown)
 	}()
 
 	for {
 		select {
-		case x, ok := <-ch:
-			if !ok {
-				fmt.Println("Channel closed")
-				return
-			}
-			fmt.Println("Value available:", x)
+		case <-shutdown:
+			fmt.Println("Interrupted....")
 			return
 		default:
-			fmt.Println("No value available, doing other work...")
-			time.Sleep(1 * time.Second)
+			fmt.Println("Normal...")
+			time.Sleep(time.Second)
 		}
 	}
 }
