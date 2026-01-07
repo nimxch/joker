@@ -2,31 +2,44 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
 func main() {
 	fmt.Println("Hello Joker")
-	shutdown := make(chan struct{})
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
+	listener, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	// Handle Ctrl+C
 	go func() {
-		<-sigCh
-		close(shutdown)
+		var sig os.Signal
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
+		sig = <-sigCh
+		fmt.Println("\nReceived signal:", sig)
+		listener.Close()
 	}()
 
 	for {
-		select {
-		case <-shutdown:
-			fmt.Println("Interrupted....")
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Println("Server shutting down")
 			return
-		default:
-			fmt.Println("Normal...")
-			time.Sleep(time.Second)
 		}
+
+		fmt.Println("Handling connection")
+		go handleConnection(conn)
 	}
+}
+
+func handleConnection(conn net.Conn) {
+	defer conn.Close()
+	_ = conn
 }
