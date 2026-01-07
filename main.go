@@ -3,16 +3,29 @@ package main
 import (
 	"fmt"
 	"time"
-
-	"github.com/nimxch/joker/learn"
 )
 
 func main() {
 	fmt.Println("Hello Joker")
-	i := 0
+	ch := make(chan int, 1)
+
+	go func() {
+		time.Sleep(5 * time.Second)
+		ch <- 42
+	}()
+
 	for {
-		learn.TestFsync(i)
-		i++
-		time.Sleep(2 * time.Second)
+		select {
+		case x, ok := <-ch:
+			if !ok {
+				fmt.Println("Channel closed")
+				return
+			}
+			fmt.Println("Value available:", x)
+			return
+		default:
+			fmt.Println("No value available, doing other work...")
+			time.Sleep(1 * time.Second)
+		}
 	}
 }
