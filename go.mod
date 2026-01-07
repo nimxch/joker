@@ -1,3 +1,3 @@
-module github.com/0x4E43/joker
+module github.com/nimxch/joker
 
 go 1.20

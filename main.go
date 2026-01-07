@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/0x4E43/joker/learn"
+	"github.com/nimxch/joker/learn"
 )
 
 func main() {
