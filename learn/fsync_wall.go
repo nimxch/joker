@@ -19,4 +19,5 @@ func TestFsync(iter int) {
 	if err != nil {
 		fmt.Println("Error: ", err)
 	}
+	file.Sync()
 }
