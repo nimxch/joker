@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"os/signal"
@@ -41,5 +42,18 @@ func main() {
 
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
-	_ = conn
+
+	buffer := make([]byte, 1024)
+	for {
+		n, err := conn.Read(buffer)
+		if err != nil {
+			if err != io.EOF {
+				fmt.Println("Error while reading data: ", err)
+			}
+			fmt.Println("Error: ", err)
+			break
+		}
+
+		fmt.Println(string(buffer[:n]))
+	}
 }
