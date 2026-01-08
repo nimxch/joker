@@ -9,9 +9,16 @@ import (
 	"syscall"
 )
 
+const (
+	MAX_NODE_SIZE = 1024 * 8 // 8KB fits into CPU L1/L2 Cache
+)
+
 func main() {
 	fmt.Println("Hello Joker")
 
+}
+
+func InitServerSync() {
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		fmt.Println("Error:", err)
