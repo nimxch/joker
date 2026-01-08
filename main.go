@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/nimxch/joker/learn"
 )
 
 const (
@@ -15,7 +17,17 @@ const (
 
 func main() {
 	fmt.Println("Hello Joker")
-
+	q := &learn.Queue{}
+	q.Enqueue([]byte("hello\n"))
+	node, _ := q.Peek()
+	fmt.Print(string(node))
+	q.Enqueue([]byte("World!\n"))
+	node, _ = q.Peek()
+	fmt.Print(string(node))
+	q.Enqueue([]byte("Nimai!\n"))
+	q.Enqueue([]byte("Charan Nimai!\n"))
+	node, _ = q.Peek()
+	fmt.Print(string(node))
 }
 
 func InitServerSync() {

@@ -46,7 +46,7 @@ func NewNode() *Node {
 	return &Node{}
 }
 
-func (q *Queue) Enqueue(wal WAL, payload []byte) error {
+func (q *Queue) Enqueue(payload []byte) error {
 	payloadSize := len(payload)
 	entrySize := payloadSize + LENGTH_BYTES
 	// Validate the payload size
@@ -55,9 +55,9 @@ func (q *Queue) Enqueue(wal WAL, payload []byte) error {
 	}
 
 	// Write into WAL (durability)
-	if err := wal.AppendEnqueue(payload); err != nil {
-		return err
-	}
+	// if err := wal.AppendEnqueue(payload); err != nil {
+	// 	return err
+	// }
 
 	// In-Memory apply
 	var node *Node
@@ -96,4 +96,35 @@ func (q *Queue) Enqueue(wal WAL, payload []byte) error {
 	// Update the cursor
 	node.writeOffset += uint32(entrySize)
 	return nil
+}
+
+func (q *Queue) Peek() ([]byte, bool) {
+	if q.head == nil {
+		return nil, false
+	}
+
+	node := q.head
+
+	if node.readOffset >= node.writeOffset {
+		return nil, false
+	}
+
+	offSet := node.readOffset
+
+	payLoadLen := binary.LittleEndian.Uint32(
+		node.content[offSet : offSet+LENGTH_BYTES],
+	)
+
+	// Calculate Payload boundary
+	start := offSet + payLoadLen
+	end := start + payLoadLen
+
+	// Safety check
+	if end >= node.writeOffset {
+		return nil, false
+	}
+
+	payLoad := make([]byte, payLoadLen)
+	copy(payLoad, node.content[start:end])
+	return payLoad, true
 }
