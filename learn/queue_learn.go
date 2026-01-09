@@ -116,11 +116,10 @@ func (q *Queue) Peek() ([]byte, bool) {
 	)
 
 	// Calculate Payload boundary
-	start := offSet + payLoadLen
+	start := offSet + LENGTH_BYTES
 	end := start + payLoadLen
 
-	// Safety check
-	if end >= node.writeOffset {
+	if end > node.writeOffset {
 		return nil, false
 	}
 
