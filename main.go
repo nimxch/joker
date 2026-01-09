@@ -30,7 +30,10 @@ func main() {
 	q.Enqueue([]byte("Nimai!\n"))
 	q.Enqueue([]byte("Charan Nimai!\n"))
 	node, _ = q.Peek()
+	q.Dequeue()
+	deq, _ := q.Dequeue()
 	fmt.Print(string(node))
+	fmt.Print("Dequeue: ", string(deq))
 }
 
 func InitServerSync() {

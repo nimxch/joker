@@ -50,7 +50,7 @@ func (q *Queue) Enqueue(payload []byte) error {
 	payloadSize := len(payload)
 	entrySize := payloadSize + LENGTH_BYTES
 	// Validate the payload size
-	if payloadSize > MAX_NODE_BYTES {
+	if entrySize > MAX_NODE_BYTES {
 		return EntryTooLarge
 	}
 
@@ -95,6 +95,7 @@ func (q *Queue) Enqueue(payload []byte) error {
 
 	// Update the cursor
 	node.writeOffset += uint32(entrySize)
+	q.len += 1
 	return nil
 }
 
@@ -167,5 +168,6 @@ func (q *Queue) Dequeue() ([]byte, bool) {
 			q.head.prev = nil
 		}
 	}
+	q.len -= 1
 	return payLoad, true
 }
