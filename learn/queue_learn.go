@@ -1,5 +1,15 @@
 package learn
 
+// Queue invariants:
+//
+// 1. If q.head == nil, then q.tail == nil and q.len == 0
+// 2. If q.len > 0, then q.head != nil and q.tail != nil
+// 3. For any node: 0 <= readOffset <= writeOffset <= MAX_NODE_BYTES
+// 4. There are no empty nodes in the list
+// 5. Enqueue mutates only tail and writeOffset
+// 6. Dequeue mutates only head and readOffset
+// 7. q.len == total number of enqueued but not dequeued messages
+
 import (
 	"encoding/binary"
 	"errors"
@@ -14,9 +24,8 @@ const (
 type Node struct {
 	prev        *Node
 	next        *Node
-	readOffset  uint32 // Head
-	writeOffset uint32 // Tail
-	tail        int16
+	readOffset  uint32               // Head
+	writeOffset uint32               // Tail
 	content     [MAX_NODE_BYTES]byte // First 4 Byte Length, Rest PayLoad
 }
 
@@ -32,8 +41,12 @@ type WAL interface {
 	AppendEnqueue(payload []byte) error
 }
 
+// Errors
 var (
-	EntryTooLarge = errors.New("Entry larger than MAX_NODE_SIZE")
+	ErrEntryTooLarge = errors.New("Entry larger than MAX_NODE_SIZE")
+	ErrQueueLength   = errors.New("Queue Length is invalid")
+	ErrQueueOffset   = errors.New("Offset miss-match")
+	ErrEmptyQueue    = errors.New("queue is empty")
 )
 
 // Example content
@@ -51,7 +64,7 @@ func (q *Queue) Enqueue(payload []byte) error {
 	entrySize := payloadSize + LENGTH_BYTES
 	// Validate the payload size
 	if entrySize > MAX_NODE_BYTES {
-		return EntryTooLarge
+		return ErrEntryTooLarge
 	}
 
 	// Write into WAL (durability)
@@ -79,7 +92,7 @@ func (q *Queue) Enqueue(payload []byte) error {
 	}
 
 	// Append Entry (Atomic)
-	offSet := node.writeOffset
+	offSet := int(node.writeOffset)
 
 	// Write length prefix
 	binary.LittleEndian.PutUint32(
@@ -89,7 +102,7 @@ func (q *Queue) Enqueue(payload []byte) error {
 
 	// Write the payload
 	copy(
-		node.content[offSet+LENGTH_BYTES:offSet+uint32(entrySize)],
+		node.content[offSet+LENGTH_BYTES:offSet+entrySize],
 		payload,
 	)
 
@@ -99,15 +112,18 @@ func (q *Queue) Enqueue(payload []byte) error {
 	return nil
 }
 
-func (q *Queue) Peek() ([]byte, bool) {
+func (q *Queue) Peek() ([]byte, error) {
+	// Remove Empty Head
+	q.advanceHeadPastEmpty()
+
 	if q.head == nil {
-		return nil, false
+		return nil, ErrEmptyQueue
 	}
 
 	node := q.head
 
 	if node.readOffset >= node.writeOffset {
-		return nil, false
+		return nil, ErrQueueOffset
 	}
 
 	offSet := node.readOffset
@@ -121,23 +137,26 @@ func (q *Queue) Peek() ([]byte, bool) {
 	end := start + payLoadLen
 
 	if end > node.writeOffset {
-		return nil, false
+		panic("queue corruption: payload exceeds writeOffset")
 	}
 
 	payLoad := make([]byte, payLoadLen)
 	copy(payLoad, node.content[start:end])
-	return payLoad, true
+	return payLoad, nil
 }
 
-func (q *Queue) Dequeue() ([]byte, bool) {
+func (q *Queue) Dequeue() ([]byte, error) {
+	// Remove Empty Head
+	q.advanceHeadPastEmpty()
+
 	if q.head == nil {
-		return nil, false
+		return nil, ErrEmptyQueue
 	}
 
 	node := q.head
 
 	if node.readOffset >= node.writeOffset {
-		return nil, false
+		return nil, ErrQueueOffset
 	}
 
 	offSet := node.readOffset
@@ -151,7 +170,7 @@ func (q *Queue) Dequeue() ([]byte, bool) {
 	end := start + payLoadLen
 
 	if end > node.writeOffset {
-		return nil, false
+		panic("queue corruption: payload exceeds writeOffset")
 	}
 
 	payLoad := make([]byte, payLoadLen)
@@ -168,6 +187,21 @@ func (q *Queue) Dequeue() ([]byte, bool) {
 			q.head.prev = nil
 		}
 	}
+	if q.len == 0 {
+		return nil, ErrQueueLength
+	}
 	q.len -= 1
-	return payLoad, true
+	return payLoad, nil
+}
+
+func (q *Queue) advanceHeadPastEmpty() {
+	for q.head != nil && q.head.readOffset == q.head.writeOffset {
+		q.head = q.head.next
+		if q.head != nil {
+			q.head.prev = nil
+		} else {
+			q.tail = nil
+		}
+	}
+
 }
