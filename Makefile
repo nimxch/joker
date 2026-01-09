@@ -14,6 +14,7 @@ build: $(GO_FILES)
 	@mkdir -p $(BUILD_DIR)
 	@go build -o $(BIN_PATH) .
 dev:
+	@clear
 	@go run .
 
 run: build
