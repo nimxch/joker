@@ -19,8 +19,8 @@ func main() {
 	fmt.Println("Hello Joker")
 	q := &learn.Queue{}
 	q.Enqueue([]byte("hello\n"))
-	node, ok := q.Peek()
-	if !ok {
+	node, err := q.Peek()
+	if err != nil {
 		fmt.Println("NOT OK")
 	}
 	fmt.Print(string(node))
