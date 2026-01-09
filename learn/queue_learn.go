@@ -127,3 +127,45 @@ func (q *Queue) Peek() ([]byte, bool) {
 	copy(payLoad, node.content[start:end])
 	return payLoad, true
 }
+
+func (q *Queue) Dequeue() ([]byte, bool) {
+	if q.head == nil {
+		return nil, false
+	}
+
+	node := q.head
+
+	if node.readOffset >= node.writeOffset {
+		return nil, false
+	}
+
+	offSet := node.readOffset
+
+	payLoadLen := binary.LittleEndian.Uint32(
+		node.content[offSet : offSet+LENGTH_BYTES],
+	)
+
+	// Calculate Payload boundary
+	start := offSet + LENGTH_BYTES
+	end := start + payLoadLen
+
+	if end > node.writeOffset {
+		return nil, false
+	}
+
+	payLoad := make([]byte, payLoadLen)
+	copy(payLoad, node.content[start:end])
+
+	// Move the read head to next
+	node.readOffset = end
+	if node.readOffset == node.writeOffset {
+		// node is empty
+		q.head = node.next
+		if q.head == nil {
+			q.tail = nil
+		} else {
+			q.head.prev = nil
+		}
+	}
+	return payLoad, true
+}
