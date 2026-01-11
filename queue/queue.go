@@ -67,11 +67,6 @@ func (q *Queue) Enqueue(payload []byte) error {
 		return ErrEntryTooLarge
 	}
 
-	// Write into WAL (durability)
-	// if err := wal.AppendEnqueue(payload); err != nil {
-	// 	return err
-	// }
-
 	// In-Memory apply
 	var node *Node
 
