@@ -16,7 +16,9 @@ type WalManager struct {
 
 // Constructor for WalManager
 func InitWal(path string) (*WalManager, error) {
-	if strings.HasSuffix(path, "/") {
+	path = filepath.Clean(path) //Sanitize the Path
+
+	if strings.HasSuffix(path, string(os.PathSeparator)) {
 		return nil, custom.ErrInvalidFilePath
 	}
 	if strings.HasPrefix(path, "/") {
