@@ -8,7 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/nimxch/joker/learn"
+	"github.com/nimxch/joker/queue"
+	"github.com/nimxch/joker/wal"
 )
 
 const (
@@ -16,24 +17,12 @@ const (
 )
 
 func main() {
-	fmt.Println("Hello Joker")
-	q := &learn.Queue{}
-	q.Enqueue([]byte("hello\n"))
-	node, err := q.Peek()
+	wal, err := wal.InitWal("wal.txt")
 	if err != nil {
-		fmt.Println("NOT OK")
+		fmt.Println(err)
 	}
-	fmt.Print(string(node))
-	q.Enqueue([]byte("World!\n"))
-	node, _ = q.Peek()
-	fmt.Print(string(node))
-	q.Enqueue([]byte("Nimai!\n"))
-	q.Enqueue([]byte("Charan Nimai!\n"))
-	node, _ = q.Peek()
-	q.Dequeue()
-	deq, _ := q.Dequeue()
-	fmt.Print(string(node))
-	fmt.Print("Dequeue: ", string(deq))
+	q := &queue.Queue{}
+	queue.CommitEnqueue(q, wal, []byte("hello World!\n"))
 }
 
 func InitServerSync() {
