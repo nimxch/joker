@@ -100,12 +100,14 @@ func (w *WalManager) AppendEnqueue(payload []byte) error {
 	return nil
 }
 
+// TODO: Implement Write for dequeue
+// TODO: Remove code dups
 func (w *WalManager) AppendDequeue(payload []byte) error {
 	return nil
 }
 
 func (w *WalManager) Flush() error {
-	return nil
+	return w.fd.Sync()
 }
 
 func GetCrc(payload []byte) uint32 {
