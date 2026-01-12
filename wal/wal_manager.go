@@ -3,6 +3,9 @@ package wal
 import (
 	"fmt"
 	"os"
+	"strings"
+
+	"github.com/nimxch/joker/custom"
 )
 
 type WalManager struct {
@@ -11,6 +14,18 @@ type WalManager struct {
 
 // Constructor for WalManager
 func InitWal(path string) (*WalManager, error) {
+	if strings.HasSuffix(path, "/") {
+		return nil, custom.ErrInvalidFilePath
+	}
+	if strings.HasPrefix(path, "/") {
+		// sanitize string
+		path, _ = strings.CutPrefix(path, "/")
+	}
+	wd, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+	}
+	path = fmt.Sprintf("%s/%s", wd, path)
 	fd, err := os.OpenFile(
 		path,
 		os.O_CREATE|os.O_APPEND|os.O_WRONLY,

@@ -3,5 +3,6 @@ package custom
 import "errors"
 
 var (
-	ErrWalMissing = errors.New("WAL is missing")
+	ErrInvalidFilePath = errors.New("Invalid file path")
+	ErrWalMissing      = errors.New("WAL is missing")
 )
