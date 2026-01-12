@@ -2,7 +2,9 @@ package wal
 
 import (
 	"fmt"
+	"hash/crc32"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/nimxch/joker/custom"
@@ -26,6 +28,13 @@ func InitWal(path string) (*WalManager, error) {
 		fmt.Println(err)
 	}
 	path = fmt.Sprintf("%s/%s", wd, path)
+
+	// Extract the dir path and create it of not exist
+	dir := filepath.Dir(path)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return nil, err
+	}
+
 	fd, err := os.OpenFile(
 		path,
 		os.O_CREATE|os.O_APPEND|os.O_WRONLY,
@@ -41,8 +50,23 @@ func InitWal(path string) (*WalManager, error) {
 }
 
 func (w *WalManager) AppendEnqueue(payload []byte) error {
-	fmt.Println("Payload: ", payload)
-	fmt.Println("Payload len: ", len(payload))
+	// 9 = 4byte[CRC] + 1byte[OptType]+ 4byte [PayloadLen]
+	recordLength := uint32(9) + uint32(len(payload))
+
+	walRecord := WalRecord{
+		payloadLen:   uint32(len(payload)),
+		payload:      payload,
+		opType:       uint8(OPERATION_TYPE_ENQUEUE),
+		crc32:        GetCrc(payload),
+		recordLength: recordLength,
+	}
+
+	err := walRecord.WriteFsync(w)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(walRecord)
 	return nil
 }
 
@@ -52,4 +76,8 @@ func (w *WalManager) AppendDequeue(payload []byte) error {
 
 func (w *WalManager) Flush() error {
 	return nil
+}
+
+func GetCrc(payload []byte) uint32 {
+	return crc32.Checksum(payload, crc32.MakeTable(Koopman))
 }

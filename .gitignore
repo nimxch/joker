@@ -49,3 +49,7 @@ _testmain.go
 
 
 *.log
+
+
+
+data/**

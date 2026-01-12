@@ -17,9 +17,9 @@ const (
 )
 
 func main() {
-	wal, err := wal.InitWal("wal.txt")
+	wal, err := wal.InitWal("data/queue_001.wal")
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	q := &queue.Queue{}
 	queue.CommitEnqueue(q, wal, []byte("hello World!\n"))

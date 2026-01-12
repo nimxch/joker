@@ -19,3 +19,14 @@ const (
 	OPERATION_TYPE_ENQUEUE = 1
 	OPERATION_TYPE_DEQUEUE = 2
 )
+
+// Constants for crc checksum
+const (
+	IEEE       = 0xedb88320
+	Castagnoli = 0x82f63b78
+	Koopman    = 0xeb31d82e
+)
+
+func (wr *WalRecord) WriteFsync(w *WalManager) error {
+	return nil
+}
