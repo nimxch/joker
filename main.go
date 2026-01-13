@@ -23,6 +23,7 @@ func main() {
 	}
 	q := &queue.Queue{}
 	queue.CommitEnqueue(q, wal, []byte("hello World!\n"))
+
 }
 
 func InitServerSync() {

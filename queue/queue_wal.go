@@ -14,3 +14,10 @@ func CommitEnqueue(q *Queue, w wal.WAL, payload []byte) error {
 	}
 	return q.Enqueue(payload)
 }
+
+func Sync(w wal.WAL) error {
+	if w == nil {
+		return custom.ErrWalMissing
+	}
+	return w.Sync()
+}

@@ -113,3 +113,7 @@ func (w *WalManager) Flush() error {
 func GetCrc(payload []byte) uint32 {
 	return crc32.Checksum(payload, crc32.MakeTable(Koopman))
 }
+
+func (w *WalManager) Sync() error {
+	return nil
+}
