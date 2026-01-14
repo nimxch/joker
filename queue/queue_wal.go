@@ -19,5 +19,5 @@ func Sync(w wal.WAL) error {
 	if w == nil {
 		return custom.ErrWalMissing
 	}
-	return w.Sync()
+	return w.WalReplay()
 }

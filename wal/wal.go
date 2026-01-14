@@ -12,7 +12,7 @@ type WAL interface {
 	AppendEnqueue(payload []byte) error
 	AppendDequeue(payload []byte) error // optional for later
 	Flush() error                       // --> Explicitly do Fsync
-	Sync() error
+	WalReplay() error
 }
 
 const (
